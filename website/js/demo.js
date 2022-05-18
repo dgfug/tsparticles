@@ -3,7 +3,7 @@
         function changes(object, base) {
             return _.transform(object, function (result, value, key) {
                 if (!_.isEqual(value, base[key])) {
-                    result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
+                    result[key] = _.isObject(value) && _.isObject(base[key]) ? changes(value, base[key]) : value;
                 }
             });
         }
@@ -15,14 +15,14 @@
     let schema = {};
     const stats = new Stats();
 
-    stats.addPanel('count', '#ff8', 0, () => {
+    stats.addPanel("count", "#ff8", 0, () => {
         const container = tsParticles.domItem(0);
         if (container) {
             maxParticles = Math.max(container.particles.count, maxParticles);
 
             return {
                 value: container.particles.count,
-                maxValue: maxParticles
+                maxValue: maxParticles,
             };
         }
     });
@@ -102,9 +102,7 @@
                         return v.includes(text);
                     });
             }
-        } catch (e) {
-
-        }
+        } catch (e) {}
 
         return null;
     };
@@ -143,7 +141,6 @@
         }
     };
 
-
     let refreshParticles = function (callback) {
         const container = tsParticles.domItem(0);
 
@@ -151,7 +148,7 @@
             dimension_particles_options: JSON.stringify(container.options),
             event_category: "Particles",
             event_action: "Particles Refresh",
-            event_label: "Particles Refresh"
+            event_label: "Particles Refresh",
         });
 
         container.refresh().then(() => {
@@ -183,7 +180,7 @@
             dimension_status: !sidebarHidden ? "Hidden" : "Visible",
             event_category: "Sidebar",
             event_action: "Sidebar Toggle",
-            event_label: "Sidebar Toggle"
+            event_label: "Sidebar Toggle",
         });
 
         refreshParticles();
@@ -218,10 +215,12 @@
                 gtag("event", "export_image", {
                     event_category: "Particles",
                     event_action: "Image Export",
-                    event_label: "Image Export"
+                    event_label: "Image Export",
                 });
 
-                $("#exportModal").modal("show");
+                const exportModal = new bootstrap.Modal(document.getElementById("exportModal"));
+
+                exportModal.show();
             });
         }
     };
@@ -235,7 +234,6 @@
             const tmp = document.createElement("div");
 
             tsParticles.set("tmp", tmp, {}).then((tmpContainer) => {
-
                 const source = {};
 
                 _.assignIn(source, tmpContainer.options);
@@ -261,7 +259,7 @@
 
                 downloadBtn.onclick = function () {
                     const contentType = "application/json";
-                    const blob = new Blob([json], {type: contentType});
+                    const blob = new Blob([json], { type: contentType });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
 
@@ -279,10 +277,12 @@
                     dimension_particles_export_config: JSON.stringify(container.options),
                     event_category: "Particles",
                     event_action: "Config Export",
-                    event_label: "Config Export"
+                    event_label: "Config Export",
                 });
 
-                $("#exportModal").modal("show");
+                const exportModal = new bootstrap.Modal(document.getElementById("exportModal"));
+
+                exportModal.show();
             });
         }
     };
@@ -297,37 +297,15 @@
             const data = {
                 html: `<!-- tsParticles - https://particles.js.org - https://github.com/matteobruni/tsparticles -->
 <div id="tsparticles"></div>`,
-                css: `/* ---- reset ---- */
-body {
-    margin: 0;
-    font: normal 75% Arial, Helvetica, sans-serif;
-}
-
-canvas {
-    display: block;
-    vertical-align: bottom;
-}
-/* ---- tsparticles container ---- */
-#tsparticles {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: ${particlesContainer.style.backgroundColor};
-    background-image: ${particlesContainer.style.backgroundImage};
-    background-repeat: ${particlesContainer.style.backgroundRepeat};
-    background-size: ${particlesContainer.style.backgroundSize};
-    background-position: ${particlesContainer.style.backgroundPosition};
-}`,
+                css: ``,
                 js: `tsParticles.load("tsparticles", ${JSON.stringify(container.options)});`,
-                js_external: "https://cdn.jsdelivr.net/npm/tsparticles@1.35.0/tsparticles.min.js",
+                js_external: "https://cdn.jsdelivr.net/npm/tsparticles@2.0.5/tsparticles.bundle.min.js",
                 title: "tsParticles example",
                 description: "This pen was created with tsParticles from https://particles.js.org",
                 tags: "tsparticles, javascript, typescript, design, animation",
-                editors: "001"
+                editors: "001",
             };
-            const JSONstring = JSON.stringify(data)
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&apos;");
+            const JSONstring = JSON.stringify(data).replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 
             inputData.value = JSONstring;
 
@@ -335,7 +313,7 @@ canvas {
                 dimension_codepen_data: JSONstring,
                 event_category: "Particles",
                 event_action: "CodePen Export",
-                event_label: "CodePen Export"
+                event_label: "CodePen Export",
             });
 
             form.submit();
@@ -356,15 +334,14 @@ canvas {
             dimension_status: !statsHidden ? "Hidden" : "Visible",
             event_category: "Stats",
             event_action: "Stats Toggle",
-            event_label: "Stats Toggle"
+            event_label: "Stats Toggle",
         });
     };
 
     let btnParticlesUpdate = function () {
         const particles = tsParticles.domItem(0);
         particles.options.load(editor.get());
-        refreshParticles(() => {
-        });
+        refreshParticles(() => {});
     };
 
     let changeGenericPreset = function (presetId) {
@@ -378,7 +355,7 @@ canvas {
             dimension_new_preset: localStorage.presetId,
             event_category: "Particles",
             event_action: "Preset Changed",
-            event_label: "Preset Changed"
+            event_label: "Preset Changed",
         });
 
         updateParticles(editor);
@@ -412,18 +389,18 @@ canvas {
         const element = document.getElementById("editor");
         const options = {
             mode: "form",
-            modes: ["form", "view", "preview"], // allowed modes
+            modes: ["code", "form", "view", "preview", "text"], // allowed modes
             autocomplete: {
                 filter: "contain",
                 trigger: "focus",
-                getOptions: jsonEditorAutoComplete
+                getOptions: jsonEditorAutoComplete,
             },
             onError: function (err) {
                 gtag("event", "editor_error", {
                     dimension_editor_error: "Editor error: " + err,
                     event_category: "Editor",
                     event_action: "Editor Error",
-                    event_label: "Editor Error"
+                    event_label: "Editor Error",
                 });
 
                 alert(err.toString());
@@ -433,7 +410,7 @@ canvas {
                     dimension_editor_mode: "Editor changed from " + oldMode + " to " + newMode,
                     event_category: "Editor",
                     event_action: "Editor Mode Change",
-                    event_label: "Editor Mode Change"
+                    event_label: "Editor Mode Change",
                 });
             },
             onChange: function () {
@@ -441,14 +418,12 @@ canvas {
                     dimension_editor_data: JSON.stringify(editor.get()),
                     event_category: "Editor",
                     event_action: "Editor Change",
-                    event_label: "Editor Change"
+                    event_label: "Editor Change",
                 });
-            }
+            },
         };
 
         editor = new JSONEditor(element, options);
-
-        loadLinksPreset(tsParticles);
 
         const presetItems = document.body.querySelectorAll(".preset-item");
 
@@ -501,7 +476,21 @@ canvas {
         initSidebar();
         initStats();
 
+        loadFull(tsParticles);
+
         loadInfectionPlugin(tsParticles);
         loadLightInteraction(tsParticles);
+        loadParticlesRepulseInteraction(tsParticles);
+        loadGradientUpdater(tsParticles);
+        loadOrbitUpdater(tsParticles);
+        loadCurvesPath(tsParticles);
+        loadPolygonPath(tsParticles);
+        loadPerlinNoisePath(tsParticles);
+        loadSimplexNoisePath(tsParticles);
+        loadBubbleShape(tsParticles);
+        loadHeartShape(tsParticles);
+        loadMultilineTextShape(tsParticles);
+        loadRoundedRectShape(tsParticles);
+        loadSpiralShape(tsParticles);
     });
 })();
